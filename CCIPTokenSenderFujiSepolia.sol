@@ -91,6 +91,11 @@ contract CCIPTokenSenderFujiSepolia {
             fees
         );  
     }
+    
+    function balancesOf(address account) public view returns (uint256 linkBalance, uint256 bnmTokenBalance) {
+        linkBalance =  linkToken.balanceOf(account);
+        bnmTokenBalance = IERC20(bnmToken).balanceOf(account);
+    }
 
     modifier onlyOwner() {
         require(msg.sender == owner);
