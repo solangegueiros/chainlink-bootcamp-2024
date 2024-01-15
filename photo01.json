@@ -1,0 +1,15 @@
+{
+  "name": "Tiger 01",
+  "description": "Tiger",
+  "image": "https://ipfs.io/ipfs/QmfMQdqPvpSzVq4GjxgHpk4qS69kWeVCxcwsiTGNDvkRm1/Tiger-001.JPG",
+  "attributes": [
+      {
+        "trait-type": "Type",
+        "value": "Bengal"        
+      },
+      {
+        "trait-type": "Location",
+        "value": "Tampa"
+      }
+  ]
+}

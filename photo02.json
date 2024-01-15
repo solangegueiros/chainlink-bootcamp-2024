@@ -1,0 +1,15 @@
+{
+  "name": "Tiger 02",
+  "description": "Tiger",
+  "image": "https://ipfs.io/ipfs/QmfMQdqPvpSzVq4GjxgHpk4qS69kWeVCxcwsiTGNDvkRm1/Tiger-002.jpg",
+  "attributes": [
+      {
+        "trait-type": "Type",
+        "value": "Bengal"        
+      },
+      {
+        "trait-type": "Location",
+        "value": "Tokyo"
+      }
+  ]
+}
