@@ -29,7 +29,7 @@ contract CrossSourceMinter {
     constructor(address destMinterAddress) {
         owner = msg.sender;
 
-        // https://docs.chain.link/ccip/supported-networks
+        // https://docs.chain.link/ccip/supported-networks/testnet
 
         // from Fuji
         address routerAddressFuji = 0xF694E193200268f9a4868e4Aa017A0118C9a8177;

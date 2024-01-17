@@ -19,7 +19,7 @@ contract CrossDestinationMinter is CCIPReceiver {
     InftMinter public nft;
 
     event MintCallSuccessfull();
-    // https://docs.chain.link/ccip/supported-networks
+    // https://docs.chain.link/ccip/supported-networks/testnet
     address routerSepolia = 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59;
 
     constructor(address nftAddress) CCIPReceiver(routerSepolia) {

@@ -29,9 +29,9 @@ contract CrossSourceMinterMumbai {
     constructor(address destMinterAddress) {
         owner = msg.sender;
 
-        // https://docs.chain.link/ccip/supported-networks
+        // https://docs.chain.link/ccip/supported-networks/testnet
 
-        // from Fuji
+        // from Mumbai
         address routerAddressMumbai = 0x1035CabC275068e0F4b745A29CEDf38E13aF41b1;
         router = IRouterClient(routerAddressMumbai);
         linkToken = LinkTokenInterface(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
