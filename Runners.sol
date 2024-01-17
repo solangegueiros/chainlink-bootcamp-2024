@@ -58,6 +58,7 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
     ];
 
     struct Runner {
+        string name;
         string image;
         uint256 distance;
         uint256 round;
@@ -79,14 +80,14 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
         require( (aux >= 0) && (aux <= 3), "invalid charId");
         string memory yourCharacterImage = characters_image[charId];
 
-        runners.push(Runner(yourCharacterImage,0,0));
+        runners.push(Runner(characters_name[charId], yourCharacterImage, 0, 0));
 
         uint256 tokenId = tokenIdCounter.current();
         string memory uri = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
-                        '{"name": "', characters_name[charId], '",'
+                        '{"name": "', runners[tokenId].name, '",'
                         '"description": "Chainlink runner",',
                         '"image": "', runners[tokenId].image, '",'
                         '"attributes": [',
@@ -152,8 +153,8 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
             bytes(
                 string(
                     abi.encodePacked(
-                        '{"name": "RunnerNFT",',
-                        '"description": "This is your character",',
+                        '{"name": "', runners[tokenId].name, '",'
+                        '"description": "Chainlink runner",',
                         '"image": "', runners[tokenId].image, '",'
                         '"attributes": [',
                             '{"trait_type": "distance",',
