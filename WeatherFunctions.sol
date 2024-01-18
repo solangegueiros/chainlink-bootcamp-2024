@@ -94,19 +94,14 @@ contract WeatherFunctions is FunctionsClient {
         lastCity = _city;
         request_city[lastRequestId] = _city;
 
-        if (!cities[cityIndex[_city]].exists){
-            CityStruct memory auxCityStruct = CityStruct({
-                sender: msg.sender,
-                exists: true,
-                name: _city,
-                temperature: ""            
-            });
-            cities.push(auxCityStruct);
-            cityIndex[_city] = cities.length-1;           
-        }
-        else {
-            cities[cityIndex[_city]].sender = msg.sender;
-        }
+        CityStruct memory auxCityStruct = CityStruct({
+            sender: msg.sender,
+            exists: true,
+            name: _city,
+            temperature: ""            
+        });
+        cities.push(auxCityStruct);
+        cityIndex[_city] = cities.length-1;
 
         requests[lastRequestId] = RequestStatus({
             exists: true,
