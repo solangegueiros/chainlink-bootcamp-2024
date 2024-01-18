@@ -6,16 +6,22 @@ pragma solidity 0.8.19;
 import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
 import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol";
 
-contract TemperatureFunctions is FunctionsClient {
+contract WeatherFunctions is FunctionsClient {
     using FunctionsRequest for FunctionsRequest.Request;
 
     // State variables to store the last request ID, response, and error
-    bytes32 public s_lastRequestId;
-    bytes public s_lastResponse;
-    bytes public s_lastError;
+    bytes32 public lastRequestId;
+    bytes public lastResponse;
+    bytes public lastError;
 
-    // Custom error type
-    error UnexpectedRequestID(bytes32 requestId);
+    struct RequestStatus {
+        bool fulfilled; // whether the request has been successfully fulfilled
+        bool exists; // whether a requestId exists
+        bytes response;
+        bytes err;
+    }
+    mapping(bytes32 => RequestStatus) public requests; /* requestId --> requestStatus */          
+    bytes32[] public requestIds;
 
     // Event to log responses
     event Response(
@@ -35,7 +41,7 @@ contract TemperatureFunctions is FunctionsClient {
     uint32 gasLimit = 300000;
 
     // Your subscription ID.
-    uint64 public s_subscriptionId;
+    uint64 public subscriptionId;
 
     // JavaScript source code    
     string public source =
@@ -51,9 +57,20 @@ contract TemperatureFunctions is FunctionsClient {
         "return Functions.encodeString(data);";
     string public lastCity;    
     string public lastTemperature;
+    address public lastSender;
 
-    constructor(uint64 subscriptionId) FunctionsClient(router) {
-        s_subscriptionId = subscriptionId;
+    struct CityStruct {
+        address sender;
+        bool exists;
+        string name;
+        string temperature;
+    }
+    CityStruct[] public cities;
+    mapping(string => uint256) public cityIndex;
+    mapping(bytes32 => string) public request_city; /* requestId --> city*/
+
+    constructor(uint64 functionsSubscriptionId) FunctionsClient(router) {
+        subscriptionId = functionsSubscriptionId;
     }
 
     function getTemperature(
@@ -68,15 +85,33 @@ contract TemperatureFunctions is FunctionsClient {
         if (args.length > 0) req.setArgs(args); // Set the arguments for the request
 
         // Send the request and store the request ID
-        s_lastRequestId = _sendRequest(
+        lastRequestId = _sendRequest(
             req.encodeCBOR(),
-            s_subscriptionId,
+            subscriptionId,
             gasLimit,
             donID
         );
         lastCity = _city;
+        request_city[lastRequestId] = _city;
 
-        return s_lastRequestId;
+        CityStruct memory auxCityStruct = CityStruct({
+            sender: msg.sender,
+            exists: true,
+            name: _city,
+            temperature: ""            
+        });
+        cities.push(auxCityStruct);
+        cityIndex[_city] = cities.length-1;
+
+        requests[lastRequestId] = RequestStatus({
+            exists: true,
+            fulfilled: false,
+            response: "",
+            err: ""
+        });
+        requestIds.push(lastRequestId);
+
+        return lastRequestId;
     }
 
     /**
@@ -90,16 +125,32 @@ contract TemperatureFunctions is FunctionsClient {
         bytes memory response,
         bytes memory err
     ) internal override {
-        if (s_lastRequestId != requestId) {
-            revert UnexpectedRequestID(requestId); // Check if request IDs match
-        }        
-        s_lastError = err;
+        require(requests[requestId].exists, "request not found");
 
-        // Update the contract's state variables with the response and any errors
-        s_lastResponse = response;
+        lastError = err;
+        lastResponse = response;
+
+        requests[requestId].fulfilled = true;
+        requests[requestId].response = response;
+        requests[requestId].err = err;
+
+        string memory auxCity = request_city[requestId];
+
         lastTemperature = string(response);
 
+        require(cities[cityIndex[auxCity]].exists, "city not found");
+        cities[cityIndex[auxCity]].temperature = lastTemperature;
+
         // Emit an event to log the response
-        emit Response(requestId, lastTemperature, s_lastResponse, s_lastError);
+        emit Response(requestId, lastTemperature, lastResponse, lastError);
     }
+
+	function listCities() public view returns (CityStruct[] memory) {
+    	return cities;
+	}
+
+	function getCity(string memory city) public view returns (CityStruct memory) {
+    	return cities[cityIndex[city]];
+	}
+
 }
