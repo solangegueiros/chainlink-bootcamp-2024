@@ -43,11 +43,11 @@ contract WeatherFunctions is FunctionsClient {
     // Your subscription ID.
     uint64 public subscriptionId;
 
-    // JavaScript source code    
+    // JavaScript source code
     string public source =
         "const city = args[0];"
         "const apiResponse = await Functions.makeHttpRequest({"
-        "url: `https://wttr.in/${city}?format=3`,"
+        "url: `https://wttr.in/${city}?format=3&m`,"
         "responseType: 'text'"
         "});"
         "if (apiResponse.error) {"
@@ -61,7 +61,7 @@ contract WeatherFunctions is FunctionsClient {
 
     struct CityStruct {
         address sender;
-        bool exists;
+        uint timestamp;
         string name;
         string temperature;
     }
@@ -70,7 +70,7 @@ contract WeatherFunctions is FunctionsClient {
     mapping(bytes32 => string) public request_city; /* requestId --> city*/
 
     constructor(uint64 functionsSubscriptionId) FunctionsClient(router) {
-        subscriptionId = functionsSubscriptionId;
+        subscriptionId = functionsSubscriptionId;      
     }
 
     function getTemperature(
@@ -96,7 +96,7 @@ contract WeatherFunctions is FunctionsClient {
 
         CityStruct memory auxCityStruct = CityStruct({
             sender: msg.sender,
-            exists: true,
+            timestamp: 0,
             name: _city,
             temperature: ""            
         });
@@ -114,12 +114,7 @@ contract WeatherFunctions is FunctionsClient {
         return lastRequestId;
     }
 
-    /**
-     * @notice Callback function for fulfilling a request
-     * @param requestId The ID of the request to fulfill
-     * @param response The HTTP response data
-     * @param err Any errors from the Functions request
-     */
+    // Receive the weather in the city requested
     function fulfillRequest(
         bytes32 requestId,
         bytes memory response,
@@ -135,22 +130,33 @@ contract WeatherFunctions is FunctionsClient {
         requests[requestId].err = err;
 
         string memory auxCity = request_city[requestId];
-
         lastTemperature = string(response);
-
-        require(cities[cityIndex[auxCity]].exists, "city not found");
         cities[cityIndex[auxCity]].temperature = lastTemperature;
+        cities[cityIndex[auxCity]].timestamp = block.timestamp;
 
         // Emit an event to log the response
         emit Response(requestId, lastTemperature, lastResponse, lastError);
     }
 
-	function listCities() public view returns (CityStruct[] memory) {
-    	return cities;
-	}
-
 	function getCity(string memory city) public view returns (CityStruct memory) {
     	return cities[cityIndex[city]];
 	}
+
+	function listAllCities() public view returns (CityStruct[] memory) {
+    	return cities;
+	}
+
+    function listCities(uint start, uint end) public view returns (CityStruct[] memory) {
+        if (end > cities.length)
+            end = cities.length-1;
+        require (start <= end, "start must <= end");
+        uint cityCount = end - start + 1;
+        CityStruct[] memory citiesAux = new CityStruct[](cityCount);
+
+        for (uint i = start; i < (end + 1); i++) {
+            citiesAux[i-start] = cities[i];
+        }
+        return citiesAux;
+    }
 
 }
