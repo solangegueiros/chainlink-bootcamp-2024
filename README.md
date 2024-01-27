@@ -1,14 +1,19 @@
-<base target="_blank">
-
 # Chainlink Bootcamp 2024 Exercises
 
 Chainlink Bootcamp 2024 Exercises
 
+All the Sessions on 
+[Luma](https://lu.ma/qoqfl19p)
+
+[Slides](https://docs.google.com/presentation/d/e/2PACX-1vRQ5ssT21p2lr6vFgxD5_JUp3ZXePsjxVsi56ljD_UUbT2b5COSXXhDE0CsBjMBRPkVH9yofNUsvz-X/pub?start=false&loop=false&delayms=3000)
+
+[Task Form](https://forms.gle/YYUx3ErX1LwCqDBPA)
+
+Deadline: 2024 Jan 31
 
 ## Session 1 - Blockchain concepts and Wallets
 
-Watch the video on 
-<a href="https://www.youtube.com/watch?v=G7V-G7RURDI" target="_blank">Youtube</a>
+Watch on [Youtube](https://www.youtube.com/watch?v=G7V-G7RURDI)
 
 ### 1- Wallet Account1 Address
 
@@ -185,3 +190,15 @@ Open the WeatherFunctions and connect in Sol's smart contract using at address (
 Run the function GetTemperature to add your City, Temperature in Sol's contract. 
 
 The goal is to have the cities / temparatures of all students :)
+
+
+## Congratulations!
+
+You made it!
+
+If you need help or have any doubt go to the Chainlink [Discord](https://chain.link/discord)
+
+Channel: Bootcamp
+
+
+
