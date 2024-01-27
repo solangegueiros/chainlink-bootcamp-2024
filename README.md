@@ -5,7 +5,8 @@ Chainlink Bootcamp 2024 Exercises
 
 ## Session 1 - Blockchain concepts and Wallets
 
-Watch on [Youtube](https://www.youtube.com/watch?v=G7V-G7RURDI)
+Watch on 
+<a href="https://www.youtube.com/watch?v=G7V-G7RURDI" target="_blank">Youtube</a>
 
 ### 1- Wallet Account1 Address
 
