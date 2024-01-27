@@ -1,3 +1,5 @@
+<base target="_blank">
+
 # Chainlink Bootcamp 2024 Exercises
 
 Chainlink Bootcamp 2024 Exercises
