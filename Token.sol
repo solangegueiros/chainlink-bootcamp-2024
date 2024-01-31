@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.21;
+pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts@4.6.0/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts@4.6.0/access/AccessControl.sol";
 
 contract Token is ERC20, AccessControl {
 	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
