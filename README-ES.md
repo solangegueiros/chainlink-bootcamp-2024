@@ -53,7 +53,7 @@ Obtenga la identificación de la transacción y compártala.
 
 ## Clase 2 - Fundamentos de Solidity
 
-Ver en [Youtube](https://www.youtube.com/watch?v=c5YwxmuWIcw)
+Ver en [Youtube](https://www.youtube.com/watch?v=aPc_jJvPhxw)
 
 ### 4- Register Smart Contract Address
 
