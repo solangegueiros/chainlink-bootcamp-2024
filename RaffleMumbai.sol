@@ -53,7 +53,7 @@ contract RaffleMumbai is VRFConsumerBaseV2, ConfirmedOwner {
         return raffleResult;
     }
 
-    // Example: I'd like to have 2 numbers in 10
+    // Example: I'd like to have 2 numbers (amount) in 10 (maximum)
     function run(uint32 _amount, uint _maximum) public returns (uint256 requestId) {
         // Will revert if subscription is not set and funded.
         numWords = _amount;
