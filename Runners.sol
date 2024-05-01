@@ -7,10 +7,14 @@ import "@openzeppelin/contracts@4.6.0/token/ERC721/extensions/ERC721URIStorage.s
 import "@openzeppelin/contracts@4.6.0/utils/Counters.sol";
 import "@openzeppelin/contracts@4.6.0/utils/Base64.sol";
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+// Migrated from VRF 2 to VRF 2.5 contracts
+// subscription ID from uint64 to uint256
+// https://docs.chain.link/vrf/v2-5/migration-from-v2
+import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
+contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2Plus {
     using Counters for Counters.Counter;
     using Strings for uint256;
 
@@ -23,16 +27,19 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
         bool exists; // whether a requestId exists
         uint256[] randomWords;
     }
-    mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */          
+    mapping(uint256 => RequestStatus)
+        public s_requests; /* requestId --> requestStatus */
 
     // Fuji coordinator
-    // https://docs.chain.link/docs/vrf/v2/subscription/supported-networks/
-    VRFCoordinatorV2Interface COORDINATOR;
-    address vrfCoordinator = 0x2eD832Ba664535e5886b75D64C46EB9a228C2610;
-    bytes32 keyHash = 0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61;
+    // https://docs.chain.link/vrf/v2-5/supported-networks
+    IVRFCoordinatorV2Plus COORDINATOR;
+    // updated vrfCoordinator address and keyHash from VRF V2 to VRF V2.5
+    address vrfCoordinator = 0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE;
+    bytes32 keyHash =
+        0xc799bd1e3bd4d1a41cd4968997a4e03dfd2a3c7c04b695881138580163f42887;
     uint32 callbackGasLimit = 2500000;
     uint16 requestConfirmations = 3;
-    uint32 numWords =  1;
+    uint32 numWords = 1;
 
     // past requests Ids.
     uint256[] public requestIds;
@@ -40,7 +47,7 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
     uint256[] public lastRandomWords;
 
     // Your subscription ID.
-    uint64 public s_subscriptionId;
+    uint256 public s_subscriptionId;
 
     //Runners NFT
     Counters.Counter public tokenIdCounter;
@@ -50,12 +57,7 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
         "https://ipfs.io/ipfs/QmW1toapYs7M29rzLXTENn3pbvwe8ioikX1PwzACzjfdHP?filename=Chainlink_Orc.png",
         "https://ipfs.io/ipfs/QmPMwQtFpEdKrUjpQJfoTeZS1aVSeuJT6Mof7uV29AcUpF?filename=Chainlink_Witch.png"
     ];
-    string[] characters_name = [
-        "Elf",
-        "Knight",
-        "Orc",
-        "Witch"
-    ];
+    string[] characters_name = ["Elf", "Knight", "Orc", "Witch"];
 
     struct Runner {
         string name;
@@ -64,20 +66,20 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
         uint256 round;
     }
     Runner[] public runners;
-    mapping(uint256 => uint256) public request_runner; /* requestId --> tokenId*/
+    mapping(uint256 => uint256)
+        public request_runner; /* requestId --> tokenId*/
 
-
-    constructor(uint64 subscriptionId) ERC721("Runners", "RUN")
-        VRFConsumerBaseV2(vrfCoordinator)        
-    {
-        COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    constructor(
+        uint256 subscriptionId
+    ) ERC721("Runners", "RUN") VRFConsumerBaseV2Plus(vrfCoordinator) {
+        COORDINATOR = IVRFCoordinatorV2Plus(vrfCoordinator);
         s_subscriptionId = subscriptionId;
-        safeMint(msg.sender,0);
+        safeMint(msg.sender, 0);
     }
 
     function safeMint(address to, uint256 charId) public {
-        uint8 aux = uint8 (charId);
-        require( (aux >= 0) && (aux <= 3), "invalid charId");
+        uint8 aux = uint8(charId);
+        require((aux >= 0) && (aux <= 3), "invalid charId");
         string memory yourCharacterImage = characters_image[charId];
 
         runners.push(Runner(characters_name[charId], yourCharacterImage, 0, 0));
@@ -87,15 +89,23 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
             bytes(
                 string(
                     abi.encodePacked(
-                        '{"name": "', runners[tokenId].name, '",'
+                        '{"name": "',
+                        runners[tokenId].name,
+                        '",'
                         '"description": "Chainlink runner",',
-                        '"image": "', runners[tokenId].image, '",'
+                        '"image": "',
+                        runners[tokenId].image,
+                        '",'
                         '"attributes": [',
-                            '{"trait_type": "distance",',
-                            '"value": ', runners[tokenId].distance.toString(),'}',
-                            ',{"trait_type": "round",',
-                            '"value": ', runners[tokenId].round.toString(),'}',
-                        ']}'
+                        '{"trait_type": "distance",',
+                        '"value": ',
+                        runners[tokenId].distance.toString(),
+                        "}",
+                        ',{"trait_type": "round",',
+                        '"value": ',
+                        runners[tokenId].round.toString(),
+                        "}",
+                        "]}"
                     )
                 )
             )
@@ -109,18 +119,21 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
         _setTokenURI(tokenId, finalTokenURI);
     }
 
-
     function run(uint256 tokenId) external returns (uint256 requestId) {
-
-        require (tokenId < tokenIdCounter.current(), "tokenId not exists");
+        require(tokenId < tokenIdCounter.current(), "tokenId not exists");
 
         // Will revert if subscription is not set and funded.
         requestId = COORDINATOR.requestRandomWords(
-            keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
         );
         s_requests[requestId] = RequestStatus({
             randomWords: new uint256[](0),
@@ -131,37 +144,45 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
         lastRequestId = requestId;
         emit RequestSent(requestId, numWords);
         request_runner[requestId] = tokenId;
-        return requestId;      
+        return requestId;
     }
 
     function fulfillRandomWords(
-        uint256 _requestId, /* requestId */
+        uint256 _requestId /* requestId */,
         uint256[] memory _randomWords
     ) internal override {
-        require (tokenIdCounter.current() >= 0, "You must mint a NFT");
+        require(tokenIdCounter.current() >= 0, "You must mint a NFT");
         require(s_requests[_requestId].exists, "request not found");
         s_requests[_requestId].fulfilled = true;
         s_requests[_requestId].randomWords = _randomWords;
         lastRandomWords = _randomWords;
 
-        uint aux = (lastRandomWords[0] % 10 + 1) * 10;
+        uint aux = ((lastRandomWords[0] % 10) + 1) * 10;
         uint256 tokenId = request_runner[_requestId];
         runners[tokenId].distance += aux;
-        runners[tokenId].round ++;
+        runners[tokenId].round++;
 
         string memory uri = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
-                        '{"name": "', runners[tokenId].name, '",'
+                        '{"name": "',
+                        runners[tokenId].name,
+                        '",'
                         '"description": "Chainlink runner",',
-                        '"image": "', runners[tokenId].image, '",'
+                        '"image": "',
+                        runners[tokenId].image,
+                        '",'
                         '"attributes": [',
-                            '{"trait_type": "distance",',
-                            '"value": ', runners[tokenId].distance.toString(),'}',
-                            ',{"trait_type": "round",',
-                            '"value": ', runners[tokenId].round.toString(),'}',
-                        ']}'
+                        '{"trait_type": "distance",',
+                        '"value": ',
+                        runners[tokenId].distance.toString(),
+                        "}",
+                        ',{"trait_type": "round",',
+                        '"value": ',
+                        runners[tokenId].round.toString(),
+                        "}",
+                        "]}"
                     )
                 )
             )
@@ -175,20 +196,19 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
 
     function getRequestStatus(
         uint256 _requestId
-    ) external view returns (bool fulfilled, uint256[] memory randomWords) {
-
-    }
+    ) external view returns (bool fulfilled, uint256[] memory randomWords) {}
 
     // The following functions are overrides required by Solidity.
 
-    function tokenURI(uint256 tokenId)
-        public view override(ERC721, ERC721URIStorage) returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage)
-    {
+    function _burn(
+        uint256 tokenId
+    ) internal override(ERC721, ERC721URIStorage) {
         super._burn(tokenId);
     }
 }
