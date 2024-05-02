@@ -7,10 +7,15 @@ import "@openzeppelin/contracts@4.6.0/token/ERC721/extensions/ERC721URIStorage.s
 import "@openzeppelin/contracts@4.6.0/utils/Counters.sol";
 import "@openzeppelin/contracts@4.6.0/utils/Base64.sol";
 
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+//import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+//import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2Plus.sol";
 
-contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
+import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+
+contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2Plus  {
     using Counters for Counters.Counter;
     using Strings for uint256;
 
@@ -26,10 +31,10 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
     mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */          
 
     // Fuji coordinator
-    // https://docs.chain.link/docs/vrf/v2/subscription/supported-networks/
-    VRFCoordinatorV2Interface COORDINATOR;
-    address vrfCoordinator = 0x2eD832Ba664535e5886b75D64C46EB9a228C2610;
-    bytes32 keyHash = 0x354d2f95da55398f44b7cff77da56283d9c6c829a4bdf1bbcaf2ad6a4d081f61;
+    // https://docs.chain.link/vrf/v2-5/supported-networks#avalanche-fuji-testnet
+    IVRFCoordinatorV2Plus COORDINATOR;
+    address vrfCoordinator = 0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE;
+    bytes32 keyHash = 0xc799bd1e3bd4d1a41cd4968997a4e03dfd2a3c7c04b695881138580163f42887;
     uint32 callbackGasLimit = 2500000;
     uint16 requestConfirmations = 3;
     uint32 numWords =  1;
@@ -40,7 +45,7 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
     uint256[] public lastRandomWords;
 
     // Your subscription ID.
-    uint64 public s_subscriptionId;
+    uint256 public s_subscriptionId;
 
     //Runners NFT
     Counters.Counter public tokenIdCounter;
@@ -67,10 +72,10 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
     mapping(uint256 => uint256) public request_runner; /* requestId --> tokenId*/
 
 
-    constructor(uint64 subscriptionId) ERC721("Runners", "RUN")
-        VRFConsumerBaseV2(vrfCoordinator)        
+    constructor(uint256 subscriptionId) ERC721("Runners", "RUN")
+        VRFConsumerBaseV2Plus(vrfCoordinator)        
     {
-        COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+        COORDINATOR = IVRFCoordinatorV2Plus(vrfCoordinator);
         s_subscriptionId = subscriptionId;
         safeMint(msg.sender,0);
     }
@@ -114,14 +119,17 @@ contract Runners is ERC721, ERC721URIStorage, VRFConsumerBaseV2  {
 
         require (tokenId < tokenIdCounter.current(), "tokenId not exists");
 
-        // Will revert if subscription is not set and funded.
         requestId = COORDINATOR.requestRandomWords(
-            keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
         );
+
         s_requests[requestId] = RequestStatus({
             randomWords: new uint256[](0),
             exists: true,
