@@ -33,7 +33,7 @@ contract WeatherFunctions is FunctionsClient {
 
     // Hardcoded for Fuji
     // Supported networks https://docs.chain.link/chainlink-functions/supported-networks
-    address router = 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0;
+    address router =0xAf743Aa9047c73c56dDA7928bFc2Ab496a20DCcd ;
     bytes32 donID =
         0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000;
 
