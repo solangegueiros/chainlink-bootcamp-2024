@@ -46,8 +46,13 @@ contract CrossChainPriceNFT is ERC721, ERC721URIStorage {
             color: "#ff0000" //red
         });
         chain[2] = ChainStruct ({
-            code: 12532609583862916517,
-            name: "Mumbai",
+            code: 10344971235874465080,
+            name: "Base Sepolia",
+            color: "#ffffff" //black
+        });
+        chain[3] = ChainStruct ({
+            code: 10344971235874465080,
+            name: "Polygon Amoy",
             color: "#4b006e" //purple
         });
 
