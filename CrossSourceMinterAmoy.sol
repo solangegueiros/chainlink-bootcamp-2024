@@ -43,10 +43,10 @@ contract CrossSourceMinterAmoy {
     }
 
     function mintOnSepolia() external {
-        // Mint from Fuji network = chain[1]
+        // Mint from Amoy network = chain[3]
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(destinationMinter),
-            data: abi.encodeWithSignature("mintFrom(address,uint256)", msg.sender, 1),
+            data: abi.encodeWithSignature("mintFrom(address,uint256)", msg.sender, 3),
             tokenAmounts: new Client.EVMTokenAmount[](0),
             extraArgs: Client._argsToBytes(
                 Client.EVMExtraArgsV1({gasLimit: 980_000})
